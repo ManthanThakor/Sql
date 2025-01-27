@@ -267,10 +267,10 @@ SELECT EmpID, EmpFname, EmpLname
 FROM EmployeeManagement.EmployeeInfo
 WHERE EmpFname LIKE '[AEIOU]%';  -- Starts with A, E, I, O, or U
 
--- 30. Find employees whose department name starts with 'A' and is followed by any 3 characters.
+-- 30. Find employees whose department name starts with 'A' and is followed by any 5 characters.
 SELECT EmpID, EmpFname, EmpLname, Department
 FROM EmployeeManagement.EmployeeInfo
-WHERE Department LIKE 'A____';  -- 'A' followed by any two characters
+WHERE Department LIKE 'A____'; 
 
 -- 31. Find employees whose first name has exactly 5 characters.
 SELECT EmpID, EmpFname, EmpLname
