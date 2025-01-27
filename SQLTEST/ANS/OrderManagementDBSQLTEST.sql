@@ -174,17 +174,16 @@ FROM Tbl_UniqueIdentification;
 
 SELECT salesman_id, name, city, commission
 FROM Tbl_Salesman
-WHERE city = 'Paris' OR city = 'Rome';
+WHERE city IN ('Paris', 'Rome');
 
 --======================================================
-
 
 --Q-2. write a SQL query to find the details of the salespeople who come from either 'Paris' or 'Rome'. 
 --Return salesman_id, name, city, commission.
 
 SELECT salesman_id, name, city, commission
 FROM Tbl_Salesman
-WHERE city IN ('Paris', 'Rome');
+WHERE city = 'Paris' OR city = 'Rome';
 
 --======================================================
 
@@ -296,7 +295,7 @@ FROM Tbl_UniqueIdentification
 WHERE col1 LIKE '%_%';  -- !!!!!!!!!!!! WRONG (DON'T USE THIS) !!!!!!!!!!!!
 -- -----------------------
 
-https://docs.progress.com/bundle/datadirect-openaccess/page/topics/sqlref/escape-clause-in-like-operator.html
+--https://docs.progress.com/bundle/datadirect-openaccess/page/topics/sqlref/escape-clause-in-like-operator.html
 
 --======================================================
 
@@ -359,18 +358,27 @@ WHERE col1 NOT LIKE '%\%%' ESCAPE '\';
 --Q-20. write a SQL query to find all those customers who does not have any grade. 
 --Return customer_id, cust_name, city, grade, salesman_id.
 
+--SELECT customer_id, cust_name, city, grade, salesman_id
+--FROM Tbl_Customer
+--WHERE grade IS NULL;
+
 SELECT customer_id, cust_name, city, grade, salesman_id
 FROM Tbl_Customer
-WHERE grade IS NULL;
+WHERE grade = '';
 
 --======================================================
 
 --Q-21. write a SQL query to locate all customers with a grade value. 
 --Return customer_id, cust_name,city, grade, salesman_id.
 
+--SELECT customer_id, cust_name, city, grade, salesman_id
+--FROM Tbl_Customer
+--WHERE grade IS NOT NULL;
+
 SELECT customer_id, cust_name, city, grade, salesman_id
 FROM Tbl_Customer
-WHERE grade IS NOT NULL;
+WHERE grade != '';
+
 
 --======================================================
 
