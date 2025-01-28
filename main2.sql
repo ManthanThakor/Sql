@@ -24,6 +24,8 @@ USE EmployeeDBQuery2;
 ALTER DATABASE EmployeeDBQuery2
 MODIFY NAME = EmployeeDBQuery22;
 
+USE EmployeeDBQuery22;
+
 -- ==================================
 -- Create the EmployeeInfo table
 -- This creates the 'EmployeeInfo' table with an EmpID (primary key), first name, last name, department, project, address, date of birth, and gender.
@@ -324,162 +326,145 @@ WHERE Department LIKE '%ing';  -- Ends with 'ing'
 
 --=============================================
 
--- ================================
--- 1. List distinct departments from EmployeeInfo table
-SELECT DISTINCT Department
-FROM EmployeeManagement.EmployeeInfo;
 
--- 2. Count of distinct genders in EmployeeInfo table
-SELECT COUNT(DISTINCT Gender)AS UniqueGenders, Gender 
-FROM EmployeeManagement.EmployeeInfo
-GROUP BY Gender;
-
--- 3. Fetch all distinct addresses from EmployeeInfo table
-SELECT DISTINCT Address
-FROM EmployeeManagement.EmployeeInfo;
-
--- 4. List employees with distinct projects
-SELECT DISTINCT Project
-FROM EmployeeManagement.EmployeeInfo;
-
--- 5. Count of employees in each department
-SELECT Department, COUNT(EmpID) AS EmployeeCount
-FROM EmployeeManagement.EmployeeInfo
+-- 1. Count the number of employees in each department
+SELECT Department, COUNT(*) 
+FROM EmployeeManagement.EmployeeInfo 
 GROUP BY Department;
 
--- 6. Find departments with more than 2 employees
-SELECT Department, COUNT(EmpID) AS EmployeeCount
+-- 2. Get the total salary of employees in each department
+SELECT Department, SUM(Salary) 
+FROM EmployeeManagement.EmployeePosition
+GROUP BY Department;
+
+-- 3. Get the average salary of employees in each department
+SELECT Department, AVG(Salary) 
+FROM EmployeeManagement.EmployeePosition
+GROUP BY Department;
+
+-- 4. Get the minimum salary in each department
+SELECT Department, MIN(Salary) 
+FROM EmployeeManagement.EmployeePosition
+GROUP BY Department;
+
+-- 5. Get the maximum salary of employees in each department
+SELECT Department, MAX(Salary) 
+FROM EmployeeManagement.EmployeePosition
+GROUP BY Department;
+
+-- 6. Find departments with more than 5 employees
+SELECT Department, COUNT(*) 
 FROM EmployeeManagement.EmployeeInfo
+GROUP BY Department 
+HAVING COUNT(*) > 5;
+
+-- 7. Get the departments with an average salary greater than 60,000
+SELECT Department, AVG(Salary) 
+FROM EmployeeManagement.EmployeePosition
 GROUP BY Department
-HAVING COUNT(EmpID) > 2;
+HAVING AVG(Salary) > 60000;
 
--- 7. List positions with total salary greater than 100,000
-SELECT EmpPosition, SUM(Salary) AS TotalSalary
+-- 8. Get the departments where the total salary is greater than 500,000
+SELECT Department, SUM(Salary) 
 FROM EmployeeManagement.EmployeePosition
-GROUP BY EmpPosition
-HAVING SUM(Salary) > 100000;
+GROUP BY Department
+HAVING SUM(Salary) > 500000;
 
--- 8. Fetch the oldest joining date for each position
-SELECT EmpPosition, MIN(DateOfJoining) AS OldestJoiningDate
-FROM EmployeeManagement.EmployeePosition
+-- 9. Count the number of employees in each project
+SELECT Project, COUNT(*) 
+FROM EmployeeManagement.EmployeeInfo 
+GROUP BY Project;
+
+-- 10. Find projects with more than 10 employees
+SELECT Project, COUNT(*) 
+FROM EmployeeManagement.EmployeeInfo 
+GROUP BY Project 
+HAVING COUNT(*) > 10;
+
+-- 11. Get the average salary for each project
+SELECT Project, AVG(Salary) 
+FROM EmployeeManagement.EmployeePosition, EmployeeManagement.EmployeeInfo
+WHERE EmployeePosition.EmpID = EmployeeInfo.EmpID
+GROUP BY Project;
+
+-- 12. Get the highest salary in each project
+SELECT Project, MAX(Salary) 
+FROM EmployeeManagement.EmployeePosition, EmployeeManagement.EmployeeInfo
+WHERE EmployeePosition.EmpID = EmployeeInfo.EmpID
+GROUP BY Project;
+
+-- 13. Get the number of employees in each gender
+SELECT Gender, COUNT(*) 
+FROM EmployeeManagement.EmployeeInfo 
+GROUP BY Gender;
+
+-- 14. Find the gender distribution with an average salary greater than 50,000
+SELECT Gender, AVG(Salary) 
+FROM EmployeeManagement.EmployeeInfo, EmployeeManagement.EmployeePosition
+WHERE EmployeeInfo.EmpID = EmployeePosition.EmpID
+GROUP BY Gender
+HAVING AVG(Salary) > 50000;
+
+-- 15. Find the number of employees in each position
+SELECT EmpPosition, COUNT(*) 
+FROM EmployeeManagement.EmployeePosition 
 GROUP BY EmpPosition;
 
--- 9. Fetch top 3 highest salaries
-SELECT TOP 3 Salary
-FROM EmployeeManagement.EmployeePosition
-ORDER BY Salary DESC;
-
--- 10. Fetch top 5 earliest joining dates
-SELECT TOP 5 DateOfJoining
-FROM EmployeeManagement.EmployeePosition
-ORDER BY DateOfJoining ASC;
-
--- 11. Fetch top 10% employees with the highest salaries
-SELECT TOP 10 PERCENT EmpID, Salary
-FROM EmployeeManagement.EmployeePosition
-ORDER BY Salary DESC;
-
--- 12. Fetch top 2 lowest salaries
-SELECT TOP 2 Salary
-FROM EmployeeManagement.EmployeePosition
-ORDER BY Salary ASC;
-
--- 13. Skip the first 3 highest salaries and fetch the next 5
-SELECT EmpID, Salary
-FROM EmployeeManagement.EmployeePosition
-ORDER BY Salary DESC
-OFFSET 3 ROWS FETCH NEXT 5 ROWS ONLY;
-
--- 14. Fetch rows 6 to 10 by salary
-SELECT EmpID, Salary
-FROM EmployeeManagement.EmployeePosition
-ORDER BY Salary DESC
-OFFSET 5 ROWS FETCH NEXT 5 ROWS ONLY;
-
--- 15. List the total salary paid per department
-SELECT Department, SUM(Salary) AS TotalSalary
-FROM EmployeeManagement.EmployeeInfo ei
-JOIN EmployeeManagement.EmployeePosition ep ON ei.EmpID = ep.EmpID
-GROUP BY Department;
-
--- 16. Fetch average salary for each gender
-SELECT Gender, AVG(Salary) AS AverageSalary
-FROM EmployeeManagement.EmployeeInfo ei
-JOIN EmployeeManagement.EmployeePosition ep ON ei.EmpID = ep.EmpID
-GROUP BY Gender;
-
--- 17. Find the maximum salary for each position
-SELECT EmpPosition, MAX(Salary) AS MaxSalary
-FROM EmployeeManagement.EmployeePosition
+-- 16. Get the total salary for each position
+SELECT EmpPosition, SUM(Salary) 
+FROM EmployeeManagement.EmployeePosition 
 GROUP BY EmpPosition;
 
--- 18. Fetch minimum salary grouped by joining date
-SELECT DateOfJoining, MIN(Salary) AS MinSalary
+-- 17. Find the maximum salary in each position
+SELECT EmpPosition, MAX(Salary) 
+FROM EmployeeManagement.EmployeePosition 
+GROUP BY EmpPosition;
+
+-- 18. Find employees who have worked for more than 5 years in each position
+SELECT EmpPosition, COUNT(*) 
+FROM EmployeeManagement.EmployeePosition, EmployeeManagement.EmployeeInfo
+WHERE EmployeePosition.EmpID = EmployeeInfo.EmpID
+AND DATEDIFF(YEAR, DateOfJoining, GETDATE()) > 5
+GROUP BY EmpPosition;
+
+-- 19. Get the average age of employees in each position
+SELECT EmpPosition, AVG(DATEDIFF(YEAR, DOB, GETDATE())) AS AvgAge
+FROM EmployeeManagement.EmployeePosition, EmployeeManagement.EmployeeInfo
+WHERE EmployeePosition.EmpID = EmployeeInfo.EmpID
+GROUP BY EmpPosition;
+
+-- 20. Find the number of employees who joined after '2020-01-01' in each department
+SELECT Department, COUNT(*) 
+FROM EmployeeManagement.EmployeeInfo 
+WHERE DateOfJoining > '2020-01-01'
+GROUP BY Department;
+
+-- 21. Get the employees' salary by department and position
+SELECT Department, EmpPosition, SUM(Salary) 
+FROM EmployeeManagement.EmployeePosition, EmployeeManagement.EmployeeInfo
+WHERE EmployeePosition.EmpID = EmployeeInfo.EmpID
+GROUP BY Department, EmpPosition;
+
+-- 22. Get the average salary of employees whose first name starts with 'A'
+SELECT AVG(Salary) 
+FROM EmployeeManagement.EmployeePosition, EmployeeManagement.EmployeeInfo
+WHERE EmployeePosition.EmpID = EmployeeInfo.EmpID
+AND EmpFname LIKE 'A%'
+GROUP BY EmpFname;
+
+-- 23. Find departments where the total salary is between 300,000 and 500,000
+SELECT Department, SUM(Salary) 
 FROM EmployeeManagement.EmployeePosition
-GROUP BY DateOfJoining;
-
--- 19. List all projects with a count of employees working on them
-SELECT Project, COUNT(EmpID) AS EmployeeCount
-FROM EmployeeManagement.EmployeeInfo
-GROUP BY Project;
-
--- 20. Fetch total number of employees by gender
-SELECT Gender, COUNT(EmpID) AS TotalEmployees
-FROM EmployeeManagement.EmployeeInfo
-GROUP BY Gender;
-
--- 21. List total salary grouped by project
-SELECT Project, SUM(Salary) AS TotalSalary
-FROM EmployeeManagement.EmployeeInfo ei
-JOIN EmployeeManagement.EmployeePosition ep ON ei.EmpID = ep.EmpID
-GROUP BY Project;
-
--- 22. Fetch departments with minimum salary above 50,000
-SELECT Department, MIN(Salary) AS MinSalary
-FROM EmployeeManagement.EmployeeInfo ei
-JOIN EmployeeManagement.EmployeePosition ep ON ei.EmpID = ep.EmpID
 GROUP BY Department
-HAVING MIN(Salary) > 50000;
+HAVING SUM(Salary) BETWEEN 300000 AND 500000;
 
--- 23. Fetch employees whose salary is greater than the average salary
-SELECT EmpID, Salary
+-- 24. Find the highest and lowest salary for each department
+SELECT Department, MAX(Salary) AS MaxSalary, MIN(Salary) AS MinSalary
 FROM EmployeeManagement.EmployeePosition
-WHERE Salary > (SELECT AVG(Salary) FROM EmployeeManagement.EmployeePosition);
-
--- 24. Fetch positions having more than one employee
-SELECT EmpPosition, COUNT(EmpID) AS PositionCount
-FROM EmployeeManagement.EmployeePosition
-GROUP BY EmpPosition
-HAVING COUNT(EmpID) > 1;
-
--- 25. Fetch total employees joined on each joining date
-SELECT DateOfJoining, COUNT(EmpID) AS EmployeeCount
-FROM EmployeeManagement.EmployeePosition
-GROUP BY DateOfJoining;
-
--- 26. Fetch distinct genders and their counts
-SELECT Gender, COUNT(EmpID) AS GenderCount
-FROM EmployeeManagement.EmployeeInfo
-GROUP BY Gender;
-
--- 27. Fetch distinct departments and their total employees
-SELECT Department, COUNT(EmpID) AS EmployeeCount
-FROM EmployeeManagement.EmployeeInfo
 GROUP BY Department;
 
--- 28. Fetch maximum salary for each department
-SELECT Department, MAX(Salary) AS MaxSalary
-FROM EmployeeManagement.EmployeeInfo ei
-JOIN EmployeeManagement.EmployeePosition ep ON ei.EmpID = ep.EmpID
-GROUP BY Department;
-
--- 29. Fetch distinct project codes and their counts
-SELECT Project, COUNT(EmpID) AS ProjectCount
-FROM EmployeeManagement.EmployeeInfo
-GROUP BY Project;
-
--- 30. Fetch average salary grouped by gender and department
-SELECT Gender, Department, AVG(Salary) AS AverageSalary
-FROM EmployeeManagement.EmployeeInfo ei
-JOIN EmployeeManagement.EmployeePosition ep ON ei.EmpID = ep.EmpID
-GROUP BY Gender, Department;
+-- 25. Find employees who have been in the same position for more than 5 years
+SELECT EmpID, EmpPosition, COUNT(*) 
+FROM EmployeeManagement.EmployeePosition
+WHERE DATEDIFF(YEAR, DateOfJoining, GETDATE()) > 5
+GROUP BY EmpID, EmpPosition;
