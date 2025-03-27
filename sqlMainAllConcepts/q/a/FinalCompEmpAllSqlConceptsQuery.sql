@@ -1090,9 +1090,11 @@ SELECT COUNT(*) AS TotalEmployees
 FROM Employees;
 
 -- 29. Find the maximum salary among all employees
+
 SELECT MAX(Salary) AS MaxSalary 
 FROM Employees;
 
 -- 30. Find the minimum salary among all employees
+
 SELECT MIN(Salary) AS MinSalary 
 FROM Employees;
