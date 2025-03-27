@@ -219,10 +219,12 @@ VALUES
 SELECT * FROM EmployeeManagement.EmployeePosition;
 
 -- Update the 'NewEmpId' based on matching EmpID from 'EmployeeInfo' table.
-UPDATE EmployeeManagement.EmployeePosition
-SET NewEmpId = (SELECT TOP 1 EmpID 
-                FROM EmployeeManagement.EmployeeInfo 
-                WHERE EmployeeManagement.EmployeePosition.EmpID = EmployeeManagement.EmployeeInfo.EmpID);
+UPDATE ep
+SET ep.NewEmpId = ei.EmpID
+FROM EmployeeManagement.EmployeePosition ep
+INNER JOIN EmployeeManagement.EmployeeInfo ei 
+ON ep.EmpID = ei.EmpID;
+
 
 -- Update 'NewEmpId' where 'EmpPosition' = 'Lead'
 UPDATE EmployeeManagement.EmployeePosition
@@ -682,6 +684,9 @@ WHERE Email LIKE '%john%';
 SELECT * FROM Employees 
 WHERE Position LIKE 'S%r';
 
+SELECT * FROM Employees 
+WHERE Position LIKE 'S%' and Position LIKE '%r';
+
 -- 5. Find employees with a phone number that contains '1234' anywhere
 
 SELECT * FROM Employees 
@@ -903,7 +908,7 @@ WHERE col1 LIKE '%A001\\DJ-402\%%' ESCAPE '\\';
 --============================================================
 --============================================================
 
--- 1. Get the total number of employees in each department
+--  Get the total number of employees in each department
 
 SELECT DepartmentID, COUNT(EmployeeID) AS TotalEmployees
 FROM EmployeeDepartments
@@ -911,271 +916,183 @@ GROUP BY DepartmentID;
 
 --============================================================
 
--- 2. Get the average salary of employees in each department
-
-SELECT DepartmentID, AVG(Salary) AS AverageSalary
-FROM EmployeeDepartments
-GROUP BY DepartmentID;
-
---============================================================
-
--- 3. Find the highest salary in each department
-
-SELECT DepartmentID, MAX(Salary) AS HighestSalary
-FROM EmployeeDepartments
-GROUP BY DepartmentID;
-
---============================================================
-
--- 4. Get the lowest salary in each department
-
-SELECT DepartmentID, MIN(Salary) AS LowestSalary
-FROM EmployeeDepartments
-GROUP BY DepartmentID;
-
---============================================================
-
--- 5. Find the total salary paid to employees in each department
-
-SELECT DepartmentID, SUM(Salary) AS TotalSalary
-FROM EmployeeDepartments
-GROUP BY DepartmentID;
-
---============================================================
-
--- 6. Get the number of employees in each department where the salary is greater than 70,000
+--  Get the number of employees in each department where the salary is greater than 70,000
 
 SELECT DepartmentID, COUNT(EmployeeID) AS TotalEmployees
 FROM EmployeeDepartments
 WHERE Salary > 70000
 GROUP BY DepartmentID;
 
+-- ===================================
+-- Queries based on GROUP BY, HAVING, WHERE, and aggregate functions
+-- ===================================
+
+--  Count the number of employees in each position
+
+SELECT Position, COUNT(*) AS EmployeeCount 
+FROM Employees
+GROUP BY Position;
+
 --============================================================
 
--- 8. Get the average salary of employees in departments established after 2010
+-- 2. Find the total salary paid for each position
 
-SELECT DepartmentID, AVG(Salary) AS AverageSalary
-FROM EmployeeDepartments
-WHERE DepartmentID IN (
-						SELECT DepartmentID 
-						FROM Departments 
-						WHERE EstablishedYear > 2010
-						)
+SELECT Position, SUM(Salary) AS TotalSalary 
+FROM Employees 
+GROUP BY Position;
+
+-- 3. Find the average salary for each position
+
+SELECT Position, AVG(Salary) AS AvgSalary 
+FROM Employees 
+GROUP BY Position;
+
+-- 4. Count employees in each department
+
+SELECT DepartmentID, COUNT(EmployeeID) AS EmployeeCount 
+FROM EmployeeDepartments 
 GROUP BY DepartmentID;
 
---============================================================
+-- 5. Find total salary given in each department
 
--- 9. Count the number of employees with salary greater than 80,000
+SELECT DepartmentID, SUM(Salary) AS TotalSalary 
+FROM EmployeeDepartments 
+GROUP BY DepartmentID;
 
-SELECT COUNT(EmployeeID) AS TotalEmployees
-FROM EmployeeDepartments
-WHERE Salary > 80000;
+-- 6. Find the highest salary in each department
 
---============================================================
+SELECT DepartmentID, MAX(Salary) AS HighestSalary 
+FROM EmployeeDepartments 
+GROUP BY DepartmentID;
 
--- 10. Get the total salary for employees with the 'Software Engineer' position
+-- 7. Find the lowest salary in each department
 
-SELECT SUM(Salary) AS TotalSalary
-FROM Employees
+SELECT DepartmentID, MIN(Salary) AS LowestSalary 
+FROM EmployeeDepartments 
+GROUP BY DepartmentID;
+
+-- 8. Find the total budget for each department
+
+SELECT DepartmentName, SUM(Budget) AS TotalBudget 
+FROM Departments 
+GROUP BY DepartmentName;
+
+-- 9. Find employees hired after 2018
+
+SELECT * FROM Employees 
+WHERE HireDate > '2018-12-31';
+
+-- 10. Find employees earning more than 70,000
+
+SELECT * FROM Employees 
+WHERE Salary > 70000;
+
+-- 11. Find employees whose salary is between 60,000 and 80,000
+
+SELECT * FROM Employees 
+WHERE Salary BETWEEN 60000 AND 80000;
+
+-- 12. Find departments established before 2015
+
+SELECT * FROM Departments 
+WHERE EstablishedYear < 2015;
+
+-- 13. Find employees in a specific position
+
+SELECT * FROM Employees 
 WHERE Position = 'Software Engineer';
 
---============================================================
+-- 14. Find employees whose first name starts with 'J'
 
--- 11. Find the total salary for each department where the manager is assigned
-
-SELECT DepartmentID, SUM(Salary) AS TotalSalary
-FROM EmployeeDepartments
-WHERE DepartmentID IN (
-						SELECT DepartmentID 
-						FROM Departments 
-						WHERE ManagerID IS NOT NULL
-					  )
-GROUP BY DepartmentID;
-
---============================================================
-
--- 12. Get the average salary of employees where the status is 'Active'
-
-SELECT AVG(Salary) AS AverageSalary
-FROM Employees
-WHERE Status = 'Active';
-
---============================================================
-
--- 13. Get the total number of employees in each department where the salary is less than 60,000
-
-SELECT DepartmentID, COUNT(EmployeeID) AS TotalEmployees
-FROM EmployeeDepartments
-WHERE Salary < 60000
-GROUP BY DepartmentID;
-
---============================================================
-
--- 15. Get the number of employees in each department where the position is 'Software Engineer'
-SELECT DepartmentID, COUNT(EmployeeID) AS TotalEmployees
-FROM EmployeeDepartments
-WHERE Role = 'Software Engineer'
-GROUP BY DepartmentID;
-
---============================================================
-
--- 16. Get the total number of employees who have 'Manager' in their position
-
-SELECT COUNT(EmployeeID) AS TotalEmployees
-FROM Employees
-WHERE Position LIKE '%Manager%';
-
---============================================================
-
--- 17. Get the average salary of employees in each department with a budget greater than 400,000
-
-SELECT DepartmentID, AVG(Salary) AS AverageSalary
-FROM EmployeeDepartments
-WHERE DepartmentID IN (
-						SELECT DepartmentID 
-						FROM Departments 
-						WHERE Budget > 400000
-						)
-GROUP BY DepartmentID;
-
---============================================================
-
--- 18. Find the total salary of employees with the role 'HR Manager'
-
-SELECT SUM(Salary) AS TotalSalary
-FROM EmployeeDepartments
-WHERE Role = 'HR Manager';
-
---============================================================
-
--- 20. Get the average salary for employees who joined after 2018
-
-SELECT AVG(Salary) AS AverageSalary
-FROM Employees
-WHERE HireDate > '2018-01-01';
-
---============================================================
-
--- 21. Get the highest salary for employees who joined before 2015
-
-SELECT MAX(Salary) AS HighestSalary
-FROM Employees
-WHERE HireDate < '2015-01-01';
-
---============================================================
-
--- 22. Get the number of employees who are older than 30
-
-SELECT COUNT(EmployeeID) AS TotalEmployees
-FROM Employees
-WHERE DATEDIFF(YEAR, DateOfBirth, GETDATE()) > 30;
-
---============================================================
-
--- 23. Get the average salary of employees where the position is 'Product Manager'
-
-SELECT AVG(Salary) AS AverageSalary
-FROM Employees
-WHERE Position = 'Product Manager';
-
---============================================================
-
--- 27. Get the average salary of employees who have been hired after '2020-01-01'
-
-SELECT AVG(Salary) AS AverageSalary
-FROM Employees
-WHERE HireDate > '2020-01-01';
-
---============================================================
-
--- 28. Find the highest salary of employees who are older than 40
-
-SELECT MAX(Salary) AS HighestSalary
-FROM Employees
-WHERE DATEDIFF(YEAR, DateOfBirth, GETDATE()) > 40;
-
---============================================================
-
--- 29. Get the total number of employees for each role in the 'HR' department
-SELECT Role, COUNT(EmployeeID) AS TotalEmployees
-FROM EmployeeDepartments
-WHERE DepartmentID = 3
-GROUP BY Role;
-
---============================================================
-
--- 30. Get the number of employees who have the role 'Marketing Manager'
-
-SELECT COUNT(EmployeeID) AS TotalEmployees
-FROM EmployeeDepartments
-WHERE Role = 'Marketing Manager';
-
---============================================================
-
--- 34. Get the average salary of employees in departments with more than 1 employees
-
-SELECT DepartmentID, AVG(Salary) AS AverageSalary , COUNT(EmployeeID) AS Employee
-FROM EmployeeDepartments
-GROUP BY DepartmentID
-HAVING COUNT(EmployeeID) > 1;	
-
---============================================================
-
--- 35. Find the highest salary for each department where the total salary is greater than 200,000
-
-SELECT DepartmentID, MAX(Salary) AS HighestSalary
-FROM EmployeeDepartments
-GROUP BY DepartmentID
-HAVING SUM(Salary) > 200000;
-	
---============================================================
-
--- 36. Get the total salary of employees in departments that were established before 2010
-
-SELECT SUM(Salary) AS TotalSalary
-FROM EmployeeDepartments
-WHERE DepartmentID IN (
-						SELECT DepartmentID 
-						FROM Departments 
-						WHERE EstablishedYear < 2010
-						);
-
---============================================================
-
--- 37. Get the number of employees in departments established after 2015
-
-SELECT DepartmentID, COUNT(EmployeeID) AS TotalEmployees
-FROM EmployeeDepartments
-WHERE DepartmentID IN (
-						SELECT DepartmentID 
-						FROM Departments 
-						WHERE EstablishedYear > 2015
-						)
-GROUP BY DepartmentID;
-
---============================================================
-
--- 38. Find the total salary of employees who are in the 'Product Management' department
-
-SELECT SUM(Salary) AS TotalSalary
-FROM EmployeeDepartments
-WHERE DepartmentID = 5;
-
---============================================================
-
--- 39. Get the average salary of employees whose first name starts with 'J'
-
-SELECT AVG(Salary) AS AverageSalary
-FROM Employees
+SELECT * FROM Employees 
 WHERE FirstName LIKE 'J%';
 
---============================================================
+-- 15. Find departments with a budget greater than 400,000
 
--- 40. Get the number of employees with the last name 'Smith' and a salary greater than 60,000
+SELECT * FROM Departments 
+WHERE Budget > 400000;
 
-SELECT COUNT(EmployeeID) AS TotalEmployees
-FROM Employees
-WHERE LastName = 'Smith' AND Salary > 60000;
+-- 16. Find departments that have more than 3 employees assigned
 
---============================================================
+SELECT DepartmentID, COUNT(EmployeeID) AS EmployeeCount 
+FROM EmployeeDepartments 
+GROUP BY DepartmentID 
+HAVING COUNT(EmployeeID) > 3;
 
+-- 17. Find positions where the average salary is above 80,000
+
+SELECT Position, AVG(Salary) AS AvgSalary FROM Employees 
+GROUP BY Position 
+HAVING AVG(Salary) > 80000;
+
+-- 18. Find departments with a total salary expenditure greater than 200,000
+
+SELECT DepartmentID, SUM(Salary) AS TotalSalary 
+FROM EmployeeDepartments 
+GROUP BY DepartmentID HAVING SUM(Salary) > 200000;
+
+-- 19. Find positions with more than 2 employees
+
+SELECT Position, COUNT(*) AS PositionCount 
+FROM Employees 
+GROUP BY Position 
+HAVING COUNT(*) > 2;
+
+-- 20. Find employees hired after 2015 and earning more than 65,000
+
+SELECT * 
+FROM Employees 
+WHERE HireDate > '2015-12-31' AND Salary > 65000;
+
+-- 21. Find departments with an established year before 2015 and budget greater than 300,000
+
+SELECT * 
+FROM Departments 
+WHERE EstablishedYear < 2015 AND Budget > 300000;
+
+-- 22. Find employees who are active and earn more than 75,000
+
+SELECT * 
+FROM Employees 
+WHERE Status = 'Active' AND Salary > 75000;
+
+-- 23. Find employees born before 1990 and earning more than 80,000
+
+SELECT * FROM Employees 
+WHERE DateOfBirth < '1990-01-01' AND Salary > 80000;
+
+-- 24. Find departments that were established before 2010 but have a budget greater than 400,000
+
+SELECT * 
+FROM Departments 
+WHERE EstablishedYear < 2010 AND Budget > 400000;
+
+-- 25. Find employees hired in or after 2018 who have a salary greater than 70,000
+
+SELECT * 
+FROM Employees 
+WHERE HireDate >= '2018-01-01' AND Salary > 70000;
+
+-- 26. Find departments where the average budget is more than 300,000
+
+SELECT AVG(Budget) AS AvgBudget 
+FROM Departments 
+HAVING AVG(Budget) > 300000;
+
+-- 27. Find employees with unique email addresses
+
+SELECT DISTINCT Email 
+FROM Employees;
+
+-- 28. Find the total count of employees
+
+SELECT COUNT(*) AS TotalEmployees 
+FROM Employees;
+
+-- 29. Find the maximum salary among all employees
+SELECT MAX(Salary) AS MaxSalary 
+FROM Employees;
+
+-- 30. Find the minimum salary among all employees
+SELECT MIN(Salary) AS MinSalary 
+FROM Employees;
