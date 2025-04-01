@@ -5,7 +5,7 @@
 --============================================================
 
 -- Create the database
---CREATE DATABASE CompanyDBFinalPractice;
+CREATE DATABASE CompanyDBFinalPractice;
 
 -- Use the database
 USE CompanyDBFinalPractice;
@@ -1029,7 +1029,8 @@ HAVING AVG(Salary) > 80000;
 
 SELECT DepartmentID, SUM(Salary) AS TotalSalary 
 FROM EmployeeDepartments 
-GROUP BY DepartmentID HAVING SUM(Salary) > 200000;
+GROUP BY DepartmentID 
+HAVING SUM(Salary) > 200000;
 
 -- 19. Find positions with more than 2 employees
 
@@ -1058,8 +1059,8 @@ WHERE Status = 'Active' AND Salary > 75000;
 
 -- 23. Find employees born before 1990 and earning more than 80,000
 
-SELECT * FROM Employees 
-WHERE DateOfBirth < '1990-01-01' AND Salary > 80000;
+SELECT * FROM Employees  
+WHERE YEAR(DateOfBirth) < 1990 AND Salary > 80000;
 
 -- 24. Find departments that were established before 2010 but have a budget greater than 400,000
 
@@ -1071,7 +1072,8 @@ WHERE EstablishedYear < 2010 AND Budget > 400000;
 
 SELECT * 
 FROM Employees 
-WHERE HireDate >= '2018-01-01' AND Salary > 70000;
+WHERE YEAR(HireDate) >= 2018 AND Salary > 70000;
+
 
 -- 26. Find departments where the average budget is more than 300,000
 
@@ -1098,3 +1100,453 @@ FROM Employees;
 
 SELECT MIN(Salary) AS MinSalary 
 FROM Employees;
+
+
+-- ===================================
+-- Queries using TOP, OFFSET & FETCH, JOIN, and SUBQUERY
+-- ===================================
+
+-- ==============================
+-- TOP Queries
+-- ==============================
+
+-- 1. Get the top 5 highest-paid employees
+
+SELECT TOP 5 * 
+FROM Employees 
+ORDER BY Salary DESC;
+
+-- 2. Get the top 3 employees hired most recently
+
+SELECT TOP 3 * 
+FROM Employees 
+ORDER BY HireDate DESC;
+
+-- 3. Get the top 10 employees with the highest salaries
+
+SELECT TOP 10 EmployeeID, FirstName, LastName, Salary 
+FROM Employees 
+ORDER BY Salary DESC;
+
+-- 4. Get the top 5 departments with the highest budget
+
+SELECT TOP 5 * 
+FROM Departments 
+ORDER BY Budget DESC;
+
+-- ==============================
+-- OFFSET & FETCH Queries
+-- ==============================
+
+-- 6. Get the second page of employees (5 employees per page)
+
+SELECT * 
+FROM Employees 
+ORDER BY EmployeeID 
+OFFSET 5 
+ROWS FETCH NEXT 5 ROWS ONLY;
+
+-- 7. Get the third page of departments (3 departments per page)
+SELECT * 
+FROM Departments 
+ORDER BY DepartmentID 
+OFFSET 6 
+ROWS FETCH NEXT 3 ROWS ONLY;
+
+-- 8. Get the employees starting from the 6th highest salary
+
+SELECT * FROM Employees 
+ORDER BY Salary DESC 
+OFFSET 5 
+ROWS FETCH NEXT 10 ROWS ONLY;
+
+-- 9. Get all employees except the top 3 highest-paid
+
+SELECT * 
+FROM Employees 
+ORDER BY Salary DESC 
+OFFSET 3 ROWS;
+
+-- 10. Get employees who were hired after skipping the first 5 oldest employees
+
+SELECT * FROM Employees 
+ORDER BY HireDate ASC 
+OFFSET 5 ROWS;
+
+-- ==============================
+-- JOIN Queries
+-- ==============================
+
+-- 11. Get employee details along with their department name
+
+SELECT e.EmployeeID, e.FirstName, e.LastName, d.DepartmentName 
+FROM Employees e
+JOIN EmployeeDepartments ed 
+ON e.EmployeeID = ed.EmployeeID
+JOIN Departments d 
+ON ed.DepartmentID = d.DepartmentID;
+
+-- 12. Get the list of employees along with their roles in departments
+
+SELECT e.FirstName, e.LastName, ed.Role, d.DepartmentName 
+FROM Employees e
+JOIN EmployeeDepartments ed 
+ON e.EmployeeID = ed.EmployeeID
+JOIN Departments d 
+ON ed.DepartmentID = d.DepartmentID;
+
+-- 13. Get employees with their managers' names
+
+SELECT e.FirstName AS Employee, m.FirstName AS Manager, d.DepartmentName
+FROM Employees e
+JOIN Departments d 
+ON e.EmployeeID = d.ManagerID
+LEFT JOIN Employees m 
+ON d.ManagerID = m.EmployeeID;
+
+-- 14. Get all employees even if they are not assigned to a department
+
+SELECT e.EmployeeID, e.FirstName, e.LastName, d.DepartmentName
+FROM Employees e
+LEFT JOIN EmployeeDepartments ed 
+ON e.EmployeeID = ed.EmployeeID
+LEFT JOIN Departments d 
+ON ed.DepartmentID = d.DepartmentID;
+
+-- 15. Get all departments and their employees (including departments without employees)
+
+SELECT d.DepartmentName, e.FirstName, e.LastName
+FROM Departments d
+LEFT JOIN EmployeeDepartments ed 
+ON d.DepartmentID = ed.DepartmentID
+LEFT JOIN Employees e 
+ON ed.EmployeeID = e.EmployeeID;
+
+-- 16. Find employees who are not assigned to any department
+
+SELECT * 
+FROM Employees 
+WHERE EmployeeID NOT IN (SELECT EmployeeID FROM EmployeeDepartments);
+
+-- 17. Find departments without any employees
+
+SELECT * 
+FROM Departments 
+WHERE DepartmentID NOT IN (SELECT DepartmentID FROM EmployeeDepartments);
+
+-- 18. Get total salary paid by each department
+
+SELECT d.DepartmentName, SUM(ed.Salary) AS TotalSalary
+FROM Departments d
+JOIN EmployeeDepartments ed 
+ON d.DepartmentID = ed.DepartmentID
+GROUP BY d.DepartmentName;
+
+-- 19. Get the highest-paid employee in each department
+
+SELECT e.FirstName, e.LastName, d.DepartmentName, ed.Salary
+FROM EmployeeDepartments ed
+JOIN Employees e 
+ON ed.EmployeeID = e.EmployeeID
+JOIN Departments d 
+ON ed.DepartmentID = d.DepartmentID
+WHERE ed.Salary = (SELECT MAX(Salary) 
+					FROM EmployeeDepartments 
+					WHERE DepartmentID = ed.DepartmentID);
+
+-- ==============================
+-- Subquery Queries
+-- ==============================
+
+-- 20. Get employees earning more than the average salary
+
+SELECT * 
+FROM Employees 
+WHERE Salary > (SELECT AVG(Salary) 
+				FROM Employees);
+
+-- 21. Get employees who were hired after the first employee
+
+SELECT * 
+FROM Employees 
+WHERE HireDate > (SELECT MIN(HireDate) FROM Employees);
+
+-- 22. Get departments where the total budget is greater than the average budget
+
+SELECT * 
+FROM Departments 
+WHERE Budget > (SELECT AVG(Budget) FROM Departments);
+
+-- 23. Get employees who earn more than any HR employee
+
+SELECT * 
+FROM Employees 
+WHERE Salary > ANY (SELECT Salary 
+					FROM EmployeeDepartments 
+					WHERE DepartmentID = (SELECT DepartmentID 
+										 FROM Departments 
+										 WHERE DepartmentName = 'HR'));
+
+-- 24. Get employees who earn more than all employees in the 'Marketing' department
+
+SELECT * 
+FROM Employees 
+WHERE Salary > ALL (SELECT Salary 
+					FROM EmployeeDepartments 
+					WHERE DepartmentID = (SELECT DepartmentID 
+										FROM Departments	
+										WHERE DepartmentName = 'Marketing'));
+
+-- 25. Get the employee with the highest salary
+
+SELECT * 
+FROM Employees 
+WHERE Salary = (SELECT MAX(Salary) 
+				FROM Employees);
+
+-- 26. Get the employee(s) who were hired first
+
+SELECT * 
+FROM Employees 
+WHERE HireDate = (SELECT MIN(HireDate) 
+				  FROM Employees);
+
+-- 27. Get departments with more than 3 employees
+
+SELECT * 
+FROM Departments 
+WHERE DepartmentID IN (SELECT DepartmentID 
+						FROM EmployeeDepartments 
+						GROUP BY DepartmentID 
+						HAVING COUNT(EmployeeID) > 3);
+
+-- 28. Get employees who are working in more than one department
+
+SELECT * 
+FROM Employees 
+WHERE EmployeeID IN (SELECT EmployeeID 
+					FROM EmployeeDepartments 
+					GROUP BY EmployeeID 
+					HAVING COUNT(DepartmentID) > 1);
+
+-- 29. Get departments where the manager's salary is above 80,000
+
+SELECT * 
+FROM Departments 
+WHERE ManagerID IN (SELECT EmployeeID 
+					FROM Employees 
+					WHERE Salary > 80000);
+
+-- 30. Find employees who are in a department with a budget above 400,000
+
+SELECT * 
+FROM Employees 
+WHERE EmployeeID IN (SELECT EmployeeID 
+					FROM EmployeeDepartments 
+					WHERE DepartmentID IN (SELECT DepartmentID 
+										FROM Departments 
+										WHERE Budget > 400000));
+
+-- 31. Get employees who are not in any department using NOT EXISTS
+
+SELECT * 
+FROM Employees e 
+WHERE NOT EXISTS (SELECT 1 
+				FROM EmployeeDepartments ed 
+				WHERE e.EmployeeID = ed.EmployeeID);
+
+-- 32. Get departments where the manager is not assigned in EmployeeDepartments
+
+SELECT * 
+FROM Departments d 
+WHERE NOT EXISTS (SELECT 1 FROM EmployeeDepartments ed WHERE d.ManagerID = ed.EmployeeID);
+
+-- 33. Find employees who earn the second-highest salary
+
+SELECT * 
+FROM Employees 
+WHERE Salary = (SELECT MAX(Salary) 
+				FROM Employees 
+				WHERE Salary < (SELECT MAX(Salary) 
+								FROM Employees));
+
+-- 34. Get the department with the highest total salary expense
+
+SELECT TOP 1 DepartmentID ,SUM(Salary) AS highest_total_salary
+FROM EmployeeDepartments 
+GROUP BY DepartmentID 
+ORDER BY SUM(Salary) DESC;
+
+-- 35. Get the oldest employee in each department
+WITH OldestEmployees AS (
+    SELECT e.EmployeeID, e.FirstName, e.LastName, ed.DepartmentID, e.DateOfBirth,
+           RANK() OVER (PARTITION BY ed.DepartmentID ORDER BY e.DateOfBirth ASC) AS Rank
+    FROM Employees e
+    JOIN EmployeeDepartments ed ON e.EmployeeID = ed.EmployeeID
+)
+SELECT * FROM OldestEmployees WHERE Rank = 1;
+
+-- 36. Get employees who joined before their department was established
+SELECT e.FirstName, e.LastName, e.HireDate, d.DepartmentName, d.EstablishedYear
+FROM Employees e
+JOIN EmployeeDepartments ed ON e.EmployeeID = ed.EmployeeID
+JOIN Departments d ON ed.DepartmentID = d.DepartmentID
+WHERE e.HireDate < CAST(d.EstablishedYear AS DATE);
+
+-- ===================================
+-- Date Functions Queries
+-- ===================================
+
+-- 1. Get the current date
+
+SELECT GETDATE() 
+AS CurrentDate;
+
+-- 2. Get employees who were hired in the last 5 years
+
+SELECT * FROM Employees 
+WHERE DATEDIFF(YEAR, HireDate, GETDATE()) <= 5;
+
+-- 3. Get the year of hire for each employee
+
+SELECT EmployeeID, FirstName, LastName, YEAR(HireDate) AS HireYear 
+FROM Employees;
+
+-- 4. Get employees who have a birthday this month
+
+SELECT * FROM Employees 
+WHERE MONTH(DateOfBirth) = MONTH(GETDATE());
+
+-- 5. Calculate employee age
+
+SELECT EmployeeID, FirstName, LastName, DATEDIFF(YEAR, DateOfBirth, GETDATE()) AS Age 
+FROM Employees;
+
+-- 6. Find employees who were hired on a Monday
+
+SELECT * FROM Employees 
+WHERE DATENAME(WEEKDAY, HireDate) = 'Monday';
+
+-- 7. Find employees who joined after January 1, 2020
+
+SELECT * FROM Employees 
+WHERE HireDate > '2020-01-01';
+
+-- 8. Get the first day of the current year
+
+SELECT DATEFROMPARTS(YEAR(GETDATE()), 1, 1) AS FirstDayOfYear;
+
+-- 9. Get the last day of the current year
+
+SELECT EOMONTH(DATEFROMPARTS(YEAR(GETDATE()), 12, 1)) AS LastDayOfYear;
+
+-- 10. Find employees who have completed exactly 3 years in the company
+
+SELECT * FROM Employees 
+WHERE DATEDIFF(YEAR, HireDate, GETDATE()) = 3;
+
+-- ===================================
+-- String Functions Queries
+-- ===================================
+
+-- 11. Convert all employee names to uppercase
+
+SELECT UPPER(FirstName) AS FirstName, UPPER(LastName) AS LastName 
+FROM Employees;
+
+-- 12. Convert all employee names to lowercase
+
+SELECT LOWER(FirstName) AS FirstName, LOWER(LastName) AS LastName 
+FROM Employees;
+
+-- 13. Get the length of each employee's email
+
+SELECT Email, LEN(Email) AS EmailLength 
+FROM Employees;
+
+-- 14. Extract the domain from the email address
+
+SELECT Email, RIGHT(Email, CHARINDEX('@', REVERSE(Email)) - 1) AS Domain 
+FROM Employees;
+
+-- 15. Replace spaces with underscores in employee addresses
+
+SELECT Address, REPLACE(Address, ' ', '_') AS AddressFormatted 
+FROM Employees;
+
+-- 16. Get the first three letters of each employee’s first name
+
+SELECT FirstName, LEFT(FirstName, 3) AS ShortName 
+FROM Employees;
+
+-- 17. Get the last three letters of each employee’s last name
+
+SELECT LastName, RIGHT(LastName, 3) AS LastThreeChars 
+FROM Employees;
+
+-- 18. Concatenate first and last names with a space in between
+
+SELECT CONCAT(FirstName, ' ', LastName) AS FullName 
+FROM Employees;
+
+-- 19. Find employees whose email contains 'example'
+SELECT * FROM Employees WHERE Email LIKE '%example%';
+
+-- 20. Remove leading and trailing spaces from employee addresses
+
+SELECT Address, LTRIM(RTRIM(Address)) AS TrimmedAddress 
+FROM Employees;
+
+-- 21. Extract the first part of unique identification before the first underscore
+
+SELECT col1, LEFT(col1, CHARINDEX('_', col1 + '_') - 1) AS FirstPart 
+FROM Tbl_UniqueIdentification;
+
+-- 22. Extract the last numeric part after the last underscore
+
+SELECT col1, RIGHT(col1, CHARINDEX('_', REVERSE(col1) + '_') - 1) AS LastNumericPart 
+FROM Tbl_UniqueIdentification;
+
+-- 23. Replace all backslashes with dashes in unique identification numbers
+
+SELECT col1, REPLACE(col1, '\', '-') AS ModifiedID 
+FROM Tbl_UniqueIdentification;
+
+-- 24. Count the number of characters in unique identification numbers
+
+SELECT col1, LEN(col1) AS IDLength 
+FROM Tbl_UniqueIdentification;
+
+-- 25. Find records in unique identification where the format contains '/2015'
+
+SELECT * 
+FROM Tbl_UniqueIdentification 
+WHERE col1 LIKE '%/2015%';
+
+-- 26. Find unique identification records that contain numbers only
+
+SELECT * 
+FROM Tbl_UniqueIdentification 
+WHERE col1  LIKE '%[^0-9]%';
+
+-- 27. Find employees with phone numbers containing '123'
+
+SELECT * 
+FROM Employees 
+WHERE Phone LIKE '%123%';
+
+-- 28. Extract the numeric part of the employee's phone number
+
+SELECT Phone, REPLACE(Phone, '-', '') AS NumericPhone 
+FROM Employees;
+
+-- 29. Reverse the employee's first name
+
+SELECT FirstName, REVERSE(FirstName) AS ReversedFirstName 
+FROM Employees;
+
+-- 30. Find employees whose last name starts with 'M'
+
+SELECT * 
+FROM Employees 
+WHERE LastName LIKE 'M%';
